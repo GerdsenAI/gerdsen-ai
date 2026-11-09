@@ -72,3 +72,10 @@ form-action 'self' https://formspree.io;
 - Configure the security headers on the Cloudflare zone for gerdsen.ai.
 - If a portal or keep-awake status page is intended, it lives outside this repository (empty repos noted above).
 
+
+## Live Portal Check (2026-11-09)
+
+- `https://portal.gerdsen.ai` returns HTTP 401 with Cloudflare Access (`Bearer realm="OAuth"`, resource_metadata present). Endpoint is reachable and correctly protected.
+- `https://status.gerdsen.ai` and `https://keepawake.gerdsen.ai` do not resolve or respond (not currently configured).
+
+This matches a security-minded setup: the portal requires authentication before any content is served.
