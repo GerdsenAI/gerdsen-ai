@@ -1,8 +1,8 @@
-# Security Review — gerdsen.ai (updated 2026-11-10)
+# Security Review — gerdsen.ai (updated 2026-11-11)
 
-Reviewed the public static website repository for security posture. Live observations re-verified on 2026-11-10.
+Reviewed the public static website repository for security posture. Live observations re-verified on 2026-11-11.
 
-## Dependabot / Alerts (authenticated inventory 2026-11-10)
+## Dependabot / Alerts (authenticated inventory 2026-11-10; unchanged 2026-11-11)
 
 4 open Dependabot alerts, all development-scope from the local `http-server` dependency in `package.json` / `package-lock.json`:
 
@@ -15,13 +15,13 @@ Risk on the live site is low because the production deployment is pure static Gi
 
 Existing PR #12 bumps only `qs` from 6.14.0 to 6.14.1. It does not clear the remaining alerts. Both #12 and this PR remain under the deployment hold below. Do not merge while a main-branch push can trigger GitHub-hosted Actions.
 
-## Live Site Status (re-verified 2026-11-10)
+## Live Site Status (re-verified 2026-11-11)
 
 - https://gerdsen.ai returns HTTP 200. Served via Cloudflare in front of GitHub Pages (Varnish). Last-Modified 2026-04-24. Cache-Control: max-age=600.
-- No Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, or Referrer-Policy headers observed on the response.
+- No Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, or Referrer-Policy headers observed on the response (confirmed via HEAD request).
 - https://www.gerdsen.ai returns 301 → https://gerdsen.ai/ (correct redirect).
 
-## Portal / Keep-Awake (re-verified 2026-11-10)
+## Portal / Keep-Awake (re-verified 2026-11-11)
 
 - `GerdsenAI-ShepherdMCP-Cloudflare-Portal` repository is empty (409 on tree).
 - `GerdsenAI_KeepAwake` repository contains only a LICENSE file.
@@ -83,3 +83,6 @@ form-action 'self' https://formspree.io;
 - Keep #12 and this PR unmerged while the hosted-Actions deployment hold applies. Qualify remaining dependency updates separately (or remove the unused npm devDependency).
 - Configure the security headers on the Cloudflare zone for gerdsen.ai.
 - Portal edge is healthy (401 + Cloudflare Access). Status and keep-awake subdomains remain unresolved; related repositories are empty or LICENSE-only.
+
+## 2026-11-11 Re-verification
+Independent review of every line in `index.html` and `assets/js/main.js` confirms prior findings. Live HEAD request to https://gerdsen.ai returns 200 with the same missing security headers. Portal and Keep-Awake repositories unchanged (empty / LICENSE-only). No new code issues identified.
