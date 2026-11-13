@@ -1,8 +1,8 @@
-# Security Review — gerdsen.ai (updated 2026-11-11)
+# Security Review — gerdsen.ai (updated 2026-11-13)
 
-Reviewed the public static website repository for security posture. Live observations re-verified on 2026-11-11.
+Reviewed the public static website repository for security posture. Live observations re-verified on 2026-11-13.
 
-## Dependabot / Alerts (authenticated inventory 2026-11-10; unchanged 2026-11-11)
+## Dependabot / Alerts (authenticated inventory 2026-11-10; unchanged 2026-11-13)
 
 4 open Dependabot alerts, all development-scope from the local `http-server` dependency in `package.json` / `package-lock.json`:
 
@@ -15,19 +15,34 @@ Risk on the live site is low because the production deployment is pure static Gi
 
 Existing PR #12 bumps only `qs` from 6.14.0 to 6.14.1. It does not clear the remaining alerts. Both #12 and this PR remain under the deployment hold below. Do not merge while a main-branch push can trigger GitHub-hosted Actions.
 
-## Live Site Status (re-verified 2026-11-11)
+Note: `package.json` also lists unused `@fortawesome/fontawesome-free` dependency (not referenced in HTML/CSS/JS).
+
+## Live Site Status (re-verified 2026-11-13)
 
 - https://gerdsen.ai returns HTTP 200. Served via Cloudflare in front of GitHub Pages (Varnish). Last-Modified 2026-04-24. Cache-Control: max-age=600.
 - No Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, or Referrer-Policy headers observed on the response (confirmed via HEAD request).
 - https://www.gerdsen.ai returns 301 → https://gerdsen.ai/ (correct redirect).
 
-## Portal / Keep-Awake (re-verified 2026-11-11)
+## Portal / Keep-Awake (re-verified 2026-11-13)
 
 - `GerdsenAI-ShepherdMCP-Cloudflare-Portal` repository is empty (409 on tree).
 - `GerdsenAI_KeepAwake` repository contains only a LICENSE file.
 - **https://portal.gerdsen.ai**: HTTP 401. Cloudflare Access challenge (`www-authenticate: Bearer realm="OAuth"`, error="invalid_token", resource_metadata present). Edge is reachable and protected by Access. Authorized origin/connection health behind the challenge remains unverified.
 - **https://status.gerdsen.ai** and **https://keepawake.gerdsen.ai**: connection failed (no DNS resolution / no response).
 - No live portal connection health or keep-awake endpoints discovered in this website codebase.
+
+## Comparison: grumman.ai (security-minded reference)
+
+https://grumman.ai returns HTTP 200 with strong security headers:
+- Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+- Content-Security-Policy: default-src 'self'; img-src 'self'; style-src 'self'; font-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; connect-src 'self'; worker-src 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'
+- cross-origin-opener-policy: same-origin
+- cross-origin-resource-policy: same-origin
+- permissions-policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()
+- referrer-policy: no-referrer
+- x-content-type-options: nosniff
+
+gerdsen.ai should adopt a similar Cloudflare configuration for consistency and defense-in-depth.
 
 ## Code Review Findings (static site — full review of index.html + assets/js/main.js)
 
@@ -41,7 +56,7 @@ Existing PR #12 bumps only `qs` from 6.14.0 to 6.14.1. It does not clear the rem
 
 ### Recommendations / Findings
 1. **Missing security headers** (high priority for a public site)
-   - Recommend enabling on Cloudflare:
+   - Recommend enabling on Cloudflare (mirror grumman.ai where appropriate):
      - Strict-Transport-Security: choose a policy after verifying HTTPS coverage; use includeSubDomains/preload only after checking all affected subdomains.
      - Content-Security-Policy (see suggested policy below)
      - X-Frame-Options: DENY
@@ -58,7 +73,7 @@ Existing PR #12 bumps only `qs` from 6.14.0 to 6.14.1. It does not clear the rem
 
 4. **Local development script**
    - `serve-local.sh` uses Python’s `http.server`, expects an existing `.venv`, and stops processes occupying port 4000. Review those prerequisites and side effects before running it.
-   - `package.json` still lists `http-server`; consider removing the npm dependency if Python is the preferred local server, which would eliminate the `qs` and `follow-redirects` alerts.
+   - `package.json` still lists `http-server`; consider removing the npm dependency if Python is the preferred local server, which would eliminate the `qs` and `follow-redirects` alerts. Also remove unused FontAwesome dependency.
 
 5. **Workflow**
    - The current Pages workflow builds and deploys on `ubuntu-latest` after pushes to `main`. Keep tests local or on owned cloud. A merge can trigger GitHub-hosted Actions, so the merge hold remains until a separately approved deployment path satisfies that restriction.
@@ -81,8 +96,8 @@ form-action 'self' https://formspree.io;
 
 ## Next Steps
 - Keep #12 and this PR unmerged while the hosted-Actions deployment hold applies. Qualify remaining dependency updates separately (or remove the unused npm devDependency).
-- Configure the security headers on the Cloudflare zone for gerdsen.ai.
+- Configure the security headers on the Cloudflare zone for gerdsen.ai (use grumman.ai as a reference for a security-minded configuration).
 - Portal edge is healthy (401 + Cloudflare Access). Status and keep-awake subdomains remain unresolved; related repositories are empty or LICENSE-only.
 
-## 2026-11-11 Re-verification
-Independent review of every line in `index.html` and `assets/js/main.js` confirms prior findings. Live HEAD request to https://gerdsen.ai returns 200 with the same missing security headers. Portal and Keep-Awake repositories unchanged (empty / LICENSE-only). No new code issues identified.
+## 2026-11-13 Re-verification
+Independent review of every line in `index.html` (526 lines) and `assets/js/main.js` confirms prior findings. No XSS, eval, or untrusted dynamic content. Live HEAD request to https://gerdsen.ai returns 200 with the same missing security headers. Portal and Keep-Awake repositories unchanged (empty / LICENSE-only). No new code issues identified. Added comparison to grumman.ai security posture.
