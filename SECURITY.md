@@ -1,8 +1,8 @@
-# Security Review — gerdsen.ai (updated 2026-11-13)
+# Security Review — gerdsen.ai (updated 2026-11-15)
 
-Reviewed the public static website repository for security posture. Live observations re-verified on 2026-11-13.
+Reviewed the public static website repository for security posture. Live observations re-verified on 2026-11-15.
 
-## Dependabot / Alerts (authenticated inventory 2026-11-10; unchanged 2026-11-13)
+## Dependabot / Alerts (authenticated inventory 2026-11-10; unchanged 2026-11-15)
 
 4 open Dependabot alerts, all development-scope from the local `http-server` dependency in `package.json` / `package-lock.json`:
 
@@ -17,13 +17,14 @@ Existing PR #12 bumps only `qs` from 6.14.0 to 6.14.1. It does not clear the rem
 
 Note: `package.json` also lists unused `@fortawesome/fontawesome-free` dependency (not referenced in HTML/CSS/JS).
 
-## Live Site Status (re-verified 2026-11-13)
+## Live Site Status (re-verified 2026-11-15)
 
 - https://gerdsen.ai returns HTTP 200. Served via Cloudflare in front of GitHub Pages (Varnish). Last-Modified 2026-04-24. Cache-Control: max-age=600.
 - No Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, or Referrer-Policy headers observed on the response (confirmed via HEAD request).
 - https://www.gerdsen.ai returns 301 → https://gerdsen.ai/ (correct redirect).
+- Cloudflare Insights beacon present (static.cloudflareinsights.com) — expected and low risk.
 
-## Portal / Keep-Awake (re-verified 2026-11-13)
+## Portal / Keep-Awake (re-verified 2026-11-15)
 
 - `GerdsenAI-ShepherdMCP-Cloudflare-Portal` repository is empty (409 on tree).
 - `GerdsenAI_KeepAwake` repository contains only a LICENSE file.
@@ -101,3 +102,12 @@ form-action 'self' https://formspree.io;
 
 ## 2026-11-13 Re-verification
 Independent review of every line in `index.html` (526 lines) and `assets/js/main.js` confirms prior findings. No XSS, eval, or untrusted dynamic content. Live HEAD request to https://gerdsen.ai returns 200 with the same missing security headers. Portal and Keep-Awake repositories unchanged (empty / LICENSE-only). No new code issues identified. Added comparison to grumman.ai security posture.
+
+## 2026-11-15 Re-verification
+Live HEAD requests reconfirm:
+- https://gerdsen.ai → 200, no security headers (CSP/HSTS/X-Frame-Options/X-Content-Type-Options/Referrer-Policy absent).
+- https://www.gerdsen.ai → 301 to apex.
+- https://portal.gerdsen.ai → 401 with Cloudflare Access (www-authenticate Bearer realm="OAuth", invalid_token). Edge healthy and protected.
+- status.gerdsen.ai and keepawake.gerdsen.ai → no response / no DNS.
+Repositories unchanged: ShepherdMCP-Cloudflare-Portal empty; KeepAwake LICENSE-only.
+Full static code review (index.html + main.js) re-confirmed: no XSS vectors, no eval/innerHTML of untrusted input, Formspree over HTTPS with static status messages. Site remains security-minded in source but missing response headers on the live Cloudflare zone.
