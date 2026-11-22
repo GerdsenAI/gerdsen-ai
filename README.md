@@ -11,6 +11,14 @@ npm run dev
 
 The dev server runs the static site from the repository root at `http://127.0.0.1:4000`.
 
+## Local regression checks
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+These dependency-free source checks keep the early bootstrap hash, CSP resource allowances, stylesheet-based reveal delay, and documented policy in sync. They do not replace browser or deployed-header validation.
+
 ## Deployment
 
 This site is designed to publish directly from GitHub Pages with no build step.
